@@ -23,7 +23,7 @@ def create(name, pretrained, channels, classes, autoshape):
     """Creates a specified model
 
     Arguments:
-        name (str): name of model, i.e. 'yolov7'
+        name (str): name of model, i.e. 'yolov7-c3hb-4-cot'
         pretrained (bool): load pretrained weights into the model
         channels (int): number of input channels
         classes (int): number of model classes
@@ -79,12 +79,12 @@ def custom(path_or_model='path/to/model.pt', autoshape=True):
 
 
 def yolov7(pretrained=True, channels=3, classes=80, autoshape=True):
-    return create('yolov7', pretrained, channels, classes, autoshape)
+    return create('yolov7-c3hb-4-cot', pretrained, channels, classes, autoshape)
 
 
 if __name__ == '__main__':
     model = custom(path_or_model='yolov7.pt')  # custom example
-    # model = create(name='yolov7', pretrained=True, channels=3, classes=80, autoshape=True)  # pretrained example
+    # model = create(name='yolov7-c3hb-4-cot', pretrained=True, channels=3, classes=80, autoshape=True)  # pretrained example
 
     # Verify inference
     import numpy as np

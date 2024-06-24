@@ -398,7 +398,7 @@ def plot_results_overlay(start=0, stop=0):  # from utils.plots import *; plot_re
 
 
 def plot_results(start=0, stop=0, bucket='', id=(), labels=(), save_dir=''):
-    # Plot training 'results*.txt'. from utils.plots import *; plot_results(save_dir='runs/train/exp')
+    # Plot training 'results*.txt'. from utils.plots import *; plot_results(save_dir='runs/train/yolov7-c3hb-4-cot-multi1')
     fig, ax = plt.subplots(2, 5, figsize=(12, 6), tight_layout=True)
     ax = ax.ravel()
     s = ['Box', 'Objectness', 'Classification', 'Precision', 'Recall',

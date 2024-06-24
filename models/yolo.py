@@ -9,7 +9,7 @@ import torch
 from models.common import *
 from models.experimental import *
 from utils.autoanchor import check_anchor_order
-from utils.general import make_divisible, check_file, set_logging
+from utils.general import make_divisible, check_file, set_logging, feature_visualization
 from utils.torch_utils import time_synchronized, fuse_conv_and_bn, model_info, scale_img, initialize_weights, \
     select_device, copy_attr
 from utils.loss import SigmoidBin
@@ -514,7 +514,7 @@ class Model(nn.Module):
         else:  # is *.yaml
             import yaml  # for torch hub
             self.yaml_file = Path(cfg).name
-            with open(cfg) as f:
+            with open(cfg, 'r', encoding='utf-8') as f:
                 self.yaml = yaml.load(f, Loader=yaml.SafeLoader)  # model dict
 
         # Define model
@@ -625,6 +625,9 @@ class Model(nn.Module):
             x = m(x)  # run
             
             y.append(x if m.i in self.save else None)  # save output
+            # if m.i == 68 or m.i == 69 or m.i == 70 or m.i == 71:
+            #     print(m.type, m.i)
+            #     feature_visualization(x, m.type, m.i)
 
         if profile:
             print('%.1fms total' % sum(dt))
@@ -749,7 +752,7 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
                 pass
 
         n = max(round(n * gd), 1) if n > 1 else n  # depth gain
-        if m in [nn.Conv2d, Conv, RobustConv, RobustConv2, DWConv, GhostConv, RepConv, RepConv_OREPA, DownC, 
+        if m in [HorBlock, C3, BottleneckCSP, CoT3, C3HB, nn.Conv2d, Conv, RobustConv, RobustConv2, DWConv, GhostConv, RepConv, RepConv_OREPA, DownC,
                  SPP, SPPF, SPPCSPC, GhostSPPCSPC, MixConv2d, Focus, Stem, GhostStem, CrossConv, 
                  Bottleneck, BottleneckCSPA, BottleneckCSPB, BottleneckCSPC, 
                  RepBottleneck, RepBottleneckCSPA, RepBottleneckCSPB, RepBottleneckCSPC,  
@@ -765,7 +768,7 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
                 c2 = make_divisible(c2 * gw, 8)
 
             args = [c1, c2, *args[1:]]
-            if m in [DownC, SPPCSPC, GhostSPPCSPC, 
+            if m in [HorBlock, C3, BottleneckCSP, CoT3, C3HB, DownC, SPPCSPC, GhostSPPCSPC,
                      BottleneckCSPA, BottleneckCSPB, BottleneckCSPC, 
                      RepBottleneckCSPA, RepBottleneckCSPB, RepBottleneckCSPC, 
                      ResCSPA, ResCSPB, ResCSPC, 
@@ -777,6 +780,9 @@ def parse_model(d, ch):  # model_dict, input_channels(3)
                      ST2CSPA, ST2CSPB, ST2CSPC]:
                 args.insert(2, n)  # number of repeats
                 n = 1
+        elif m is HorNet:
+            c2 = args[0]
+            args = args[1:]
         elif m is nn.BatchNorm2d:
             args = [ch[f]]
         elif m is Concat:

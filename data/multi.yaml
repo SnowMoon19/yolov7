@@ -1,0 +1,9 @@
+
+train: D:\buyongxi\ComparisonDetectorDataset\train
+val: D:\buyongxi\ComparisonDetectorDataset\val
+test: D:\buyongxi\ComparisonDetectorDataset\val
+# 3 interval
+
+# Classes
+nc: 11  # number of classes
+names: ['ascus', 'asch', 'lsil', 'hsil', 'scc', 'agc', 'trichomonas', 'candida', 'flora', 'herps', 'actinomyces']  # class names

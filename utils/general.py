@@ -29,6 +29,45 @@ pd.options.display.max_columns = 10
 cv2.setNumThreads(0)  # prevent OpenCV from multithreading (incompatible with PyTorch DataLoader)
 os.environ['NUMEXPR_MAX_THREADS'] = str(min(os.cpu_count(), 8))  # NumExpr max threads
 
+import matplotlib.pyplot as plt
+from torchvision import transforms
+
+
+def feature_visualization(features, model_type, model_id, feature_num=64):
+    """
+    features: The feature map which you need to visualization
+    model_type: The type of feature map
+    model_id: The id of feature map
+    feature_num: The amount of visualization you need
+    """
+    save_dir = "features/"
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+
+    # print(features.shape)
+    # block by channel dimension
+    blocks = torch.chunk(features, features.shape[1], dim=1)
+
+    # # size of feature
+    # size = features.shape[2], features.shape[3]
+
+    plt.figure()
+    for i in range(feature_num):
+        torch.squeeze(blocks[i])
+        feature = transforms.ToPILImage()(blocks[i].squeeze())
+        # print(feature)
+        ax = plt.subplot(int(math.sqrt(feature_num)), int(math.sqrt(feature_num)), i+1)
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+        plt.imshow(feature)
+        # gray feature
+        # plt.imshow(feature, cmap='gray')
+
+    # plt.show()
+    plt.savefig(save_dir + '{}_{}_feature_map_{}.png'
+                .format(model_type.split('.')[2], model_id, feature_num), dpi=300)
+
 
 def set_logging(rank=-1):
     logging.basicConfig(
@@ -458,12 +497,82 @@ def box_iou(box1, box2):
         # box = 4xn
         return (box[2] - box[0]) * (box[3] - box[1])
 
+    #
+    # w1 = abs(box1[:, 2] - box1[:, 0])
+    # h1 = abs(box1[:, 3] - box1[:, 1])
+    # w2 = abs(box2[:, 2] - box2[:, 0])
+    # h2 = abs(box2[:, 3] - box2[:, 1])
+    #
+    # x1 = box1[:, 0] + w1 / 2.0
+    # y1 = box1[:, 1] + h1 / 2.0
+    # x2 = box2[:, 0] + w2 / 2.0
+    # y2 = box2[:, 1] + h2 / 2.0
+    #
+    # r1 = torch.sqrt(w1 * w1 + h1 * h1) / 2.0
+    # r2 = torch.sqrt(w2 * w2 + h2 * h2) / 2.0
+    #
+    # n1 = np.shape(w1)[0]
+    # n2 = np.shape(w2)[0]
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # m = torch.zeros(n1, n2).to(device)
+    # for i in range(n1):
+    #     for j in range(n2):
+    #         m[i][j] = compute_IOU([x1[i], y1[i]], r1[i], [x2[j], y2[j]], r2[j])
+    # return m
+
+
     area1 = box_area(box1.T)
     area2 = box_area(box2.T)
 
     # inter(N,M) = (rb(N,M,2) - lt(N,M,2)).clamp(0).prod(2)
     inter = (torch.min(box1[:, None, 2:], box2[:, 2:]) - torch.max(box1[:, None, :2], box2[:, :2])).clamp(0).prod(2)
     return inter / (area1[:, None] + area2 - inter)  # iou = inter / (area1 + area2 - inter)
+
+def compute_Distance(point1, point2):
+    '''
+    compute distance between two point
+    :param point1: [x1, y1]
+    :param point2: [x2, y2]
+    :return: distance value
+    '''
+    return math.sqrt(pow(point1[0] - point2[0], 2) + pow(point1[1] - point2[1], 2))
+
+def compute_intersectionArea(X1, Y1, R1, X2, Y2, R2):
+    from math import sqrt, acos, sin, pi
+    Pi = pi
+    d = torch.sqrt(((X2 - X1) * (X2 - X1)) + ((Y2 - Y1) * (Y2 - Y1)))
+
+    if (d > R1 + R2):
+        ans = 0
+
+    elif (d <= (R1 - R2) and R1 >= R2):
+        ans = Pi * R2 * R2
+
+    elif (d <= (R2 - R1) and R2 >= R1):
+        ans = Pi * R1 * R1
+
+    else:
+        alpha = torch.acos(((R1 * R1) + (d * d) - (R2 * R2)) / (2 * R1 * d)) * 2
+        beta = torch.acos(((R2 * R2) + (d * d) - (R1 * R1)) / (2 * R2 * d)) * 2
+        a1 = (0.5 * beta * R2 * R2) - (0.5 * R2 * R2 * sin(beta))
+        a2 = (0.5 * alpha * R1 * R1) - (0.5 * R1 * R1 * sin(alpha))
+        ans = a1 + a2
+
+    return ans
+
+def compute_IOU(center1, r1, center2, r2):
+    """
+    计算两个圆的交并比
+    :param center1 : 第一个圆的圆心坐标
+    :param r1: 第一个圆的半径
+    :return: 交并比IOU
+    """
+    s1 = math.pi * r1 * r1
+    s2 = math.pi * r2 * r2
+    intersect = compute_intersectionArea(center1[0], center1[1], r1, center2[0], center2[1], r2)
+    union = s1 + s2 - intersect
+
+    return intersect / union
 
 
 def wh_iou(wh1, wh2):
@@ -880,7 +989,7 @@ def apply_classifier(x, model, img, im0):
 
 
 def increment_path(path, exist_ok=True, sep=''):
-    # Increment path, i.e. runs/exp --> runs/exp{sep}0, runs/exp{sep}1 etc.
+    # Increment path, i.e. runs/yolov7-c3hb-4-cot-multi1 --> runs/yolov7-c3hb-4-cot-multi1{sep}0, runs/yolov7-c3hb-4-cot-multi1{sep}1 etc.
     path = Path(path)  # os-agnostic
     if (path.exists() and exist_ok) or (not path.exists()):
         return str(path)

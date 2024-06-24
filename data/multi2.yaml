@@ -1,0 +1,9 @@
+
+train: D:\\fxj\\data\\yolo3\\train
+val: D:\\fxj\\data\\yolo3\\test
+test: D:\\fxj\\data\\yolo3\\test
+# json dataset
+
+# Classes
+nc: 11  # number of classes
+names: ['ascus', 'asch', 'lsil', 'hsil', 'scc', 'agc', 'trichomonas', 'candida', 'flora', 'herps', 'actinomyces']  # class names

@@ -29,8 +29,8 @@ if __name__ == '__main__':
                         '--model',
                         type=str,
                         required=False,
-                        default='yolov7',
-                        help='Inference model name, default yolov7')
+                        default='yolov7-c3hb-4-cot',
+                        help='Inference model name, default yolov7-c3hb-4-cot')
     parser.add_argument('--width',
                         type=int,
                         required=False,

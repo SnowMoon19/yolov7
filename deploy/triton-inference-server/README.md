@@ -11,19 +11,19 @@ There are no additional dependencies needed to run this deployment, except a wor
 See https://github.com/WongKinYiu/yolov7#export for more info.
 
 ```bash
-#install onnx-simplifier not listed in general yolov7 requirements.txt
+#install onnx-simplifier not listed in general yolov7-c3hb-4-cot requirements.txt
 pip3 install onnx-simplifier 
 
 # Pytorch Yolov7 -> ONNX with grid, EfficientNMS plugin and dynamic batch size
-python export.py --weights ./yolov7.pt --grid --end2end --dynamic-batch --simplify --topk-all 100 --iou-thres 0.65 --conf-thres 0.35 --img-size 640 640
+python export.py --weights ./yolov7-c3hb-4-cot.pt --grid --end2end --dynamic-batch --simplify --topk-all 100 --iou-thres 0.65 --conf-thres 0.35 --img-size 640 640
 # ONNX -> TensorRT with trtexec and docker
 docker run -it --rm --gpus=all nvcr.io/nvidia/tensorrt:22.06-py3
-# Copy onnx -> container: docker cp yolov7.onnx <container-id>:/workspace/
+# Copy onnx -> container: docker cp yolov7-c3hb-4-cot.onnx <container-id>:/workspace/
 # Export with FP16 precision, min batch 1, opt batch 8 and max batch 8
-./tensorrt/bin/trtexec --onnx=yolov7.onnx --minShapes=images:1x3x640x640 --optShapes=images:8x3x640x640 --maxShapes=images:8x3x640x640 --fp16 --workspace=4096 --saveEngine=yolov7-fp16-1x8x8.engine --timingCacheFile=timing.cache
+./tensorrt/bin/trtexec --onnx=yolov7-c3hb-4-cot.onnx --minShapes=images:1x3x640x640 --optShapes=images:8x3x640x640 --maxShapes=images:8x3x640x640 --fp16 --workspace=4096 --saveEngine=yolov7-c3hb-4-cot-fp16-1x8x8.engine --timingCacheFile=timing.cache
 # Test engine
-./tensorrt/bin/trtexec --loadEngine=yolov7-fp16-1x8x8.engine
-# Copy engine -> host: docker cp <container-id>:/workspace/yolov7-fp16-1x8x8.engine .
+./tensorrt/bin/trtexec --loadEngine=yolov7-c3hb-4-cot-fp16-1x8x8.engine
+# Copy engine -> host: docker cp <container-id>:/workspace/yolov7-c3hb-4-cot-fp16-1x8x8.engine .
 ```
 
 Example output of test with RTX 3090.
@@ -49,10 +49,10 @@ See [Triton Model Repository Documentation](https://github.com/triton-inference-
 
 ```bash
 # Create folder structure
-mkdir -p triton-deploy/models/yolov7/1/
-touch triton-deploy/models/yolov7/config.pbtxt
+mkdir -p triton-deploy/models/yolov7-c3hb-4-cot/1/
+touch triton-deploy/models/yolov7-c3hb-4-cot/config.pbtxt
 # Place model
-mv yolov7-fp16-1x8x8.engine triton-deploy/models/yolov7/1/model.plan
+mv yolov7-c3hb-4-cot-fp16-1x8x8.engine triton-deploy/models/yolov7-c3hb-4-cot/1/model.plan
 ```
 
 ## Model Configuration
@@ -74,7 +74,7 @@ Example repository:
 $ tree triton-deploy/
 triton-deploy/
 └── models
-    └── yolov7
+    └── yolov7-c3hb-4-cot
         ├── 1
         │   └── model.plan
         └── config.pbtxt
@@ -109,7 +109,7 @@ Example test for 16 concurrent clients using shared memory, each with batch size
 ```bash
 docker run -it --ipc=host --net=host nvcr.io/nvidia/tritonserver:22.06-py3-sdk /bin/bash
 
-./install/bin/perf_analyzer -m yolov7 -u 127.0.0.1:8001 -i grpc --shared-memory system --concurrency-range 16
+./install/bin/perf_analyzer -m yolov7-c3hb-4-cot -u 127.0.0.1:8001 -i grpc --shared-memory system --concurrency-range 16
 
 # Result (truncated)
 Concurrency: 16, throughput: 590.119 infer/sec, latency 27080 usec

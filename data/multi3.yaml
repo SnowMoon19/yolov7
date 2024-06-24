@@ -1,0 +1,9 @@
+
+train: D:\\fxj\\data\\yolo\\train
+val: D:\\fxj\\data\\yolo\\val
+test: D:\\fxj\\data\\yolo\\val
+# original
+
+# Classes
+nc: 11  # number of classes
+names: ['ascus', 'asch', 'lsil', 'hsil', 'scc', 'agc', 'trichomonas', 'candida', 'flora', 'herps', 'actinomyces']  # class names

@@ -10,7 +10,7 @@ anchors:
   - [ 140,301,  303,264,  238,542 ]  # P5/32
   - [ 436,615,  739,380,  925,792 ]  # P6/64
 
-# yolov7 backbone
+# yolov7-c3hb-4-cot backbone
 backbone:
   # [from, number, module, args],
   [[-1, 1, ReOrg, []],  # 0
@@ -132,7 +132,7 @@ backbone:
    [[-1, -11], 1, Shortcut, [1]],  # 111 
   ]
 
-# yolov7 head
+# yolov7-c3hb-4-cot head
 head:
   [[-1, 1, SPPCSPC, [640]], # 112
   

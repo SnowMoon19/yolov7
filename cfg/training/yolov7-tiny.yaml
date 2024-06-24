@@ -9,7 +9,7 @@ anchors:
   - [30,61, 62,45, 59,119]  # P4/16
   - [116,90, 156,198, 373,326]  # P5/32
 
-# yolov7-tiny backbone
+# yolov7-c3hb-4-cot-tiny backbone
 backbone:
   # [from, number, module, args] c2, k=1, s=1, p=None, g=1, act=True
   [[-1, 1, Conv, [32, 3, 2, None, 1, nn.LeakyReLU(0.1)]],  # 0-P1/2  
@@ -48,7 +48,7 @@ backbone:
    [-1, 1, Conv, [512, 1, 1, None, 1, nn.LeakyReLU(0.1)]],  # 28
   ]
 
-# yolov7-tiny head
+# yolov7-c3hb-4-cot-tiny head
 head:
   [[-1, 1, Conv, [256, 1, 1, None, 1, nn.LeakyReLU(0.1)]],
    [-2, 1, Conv, [256, 1, 1, None, 1, nn.LeakyReLU(0.1)]],
