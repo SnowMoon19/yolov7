@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Official YOLOv7
 
 Implementation of paper - [YOLOv7: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors](https://arxiv.org/abs/2207.02696)
@@ -308,3 +309,7 @@ YOLOv7-3d-detection & YOLOv7-lidar & YOLOv7-road (with NTUT)
 * [https://github.com/TexasInstruments/edgeai-yolov5/tree/yolo-pose](https://github.com/TexasInstruments/edgeai-yolov5/tree/yolo-pose)
 
 </details>
+=======
+# yolov7
+宫颈异常细胞检测
+>>>>>>> 29fd25273255770222b4b2278fe80f08286d507a
